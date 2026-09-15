@@ -9,6 +9,7 @@
   const $ = (s, el) => (el || document).querySelector(s);
   const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const abjad = (i) => ('ABCDEFGH'[i] || ('Opsi ' + (i + 1)));
   const acak = (arr) => arr.slice().sort(() => Math.random() - 0.5);
   const STS = 'tkaquest_';
 
@@ -304,7 +305,7 @@
       if (mq.gambar) isi += `<div style="text-align:center">${gambarUntuk(mq.gambar, sl.gambarA)}</div>`;
       isi += `<div class="q">${esc(mq.pertanyaan)}</div>
         <div class="opsi-grid">${mq.opsi.map((o, i) => `
-          <button class="opsi-pilih" data-i="${i}"><span class="abjad">${'ABCD'[i]}</span>${esc(o)}</button>`).join('')}</div>
+          <button class="opsi-pilih" data-i="${i}"><span class="abjad">${abjad(i)}</span>${esc(o)}</button>`).join('')}</div>
         <div class="feedback-mini" hidden></div>
       </div>`;
       ses.miniJwb = mq;
@@ -431,7 +432,7 @@
 
     if (soal.type === 'pg' || soal.type === 'pgk') {
       html += `<div class="opsi-grid" id="opsiBox">${soal.opsi.map((o, i) => `
-        <button class="opsi-pilih" data-i="${i}"><span class="abjad">${'ABCD'[i]}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
+        <button class="opsi-pilih" data-i="${i}"><span class="abjad">${abjad(i)}</span><span>${esc(o)}</span></button>`).join('')}</div>`;
       html += `<button class="tombol-utama sekunder" id="btnPeriksa" disabled style="margin-top:14px">Periksa Jawaban ✅</button>`;
     } else {
       html += `<div class="tabel-kategori-wrap"><table class="tabel-kategori"><tr><th>Pernyataan</th><th>Benar</th><th>Salah</th></tr>`;
@@ -513,7 +514,7 @@
     let isi = `<h3>${ok ? '🎉 Hebat, benar!' : '😅 Belum tepat'}</h3>
       <p>${esc(soal.penjelasan)}</p>`;
     if (!ok && soal.type === 'pg') {
-      isi += `<div class="jawab-benar-teks">Jawaban yang benar: ${'ABCD'[soal.jawaban]}. ${esc(soal.opsi[soal.jawaban])}</div>`;
+      isi += `<div class="jawab-benar-teks">Jawaban yang benar: ${abjad(soal.jawaban)}. ${esc(soal.opsi[soal.jawaban])}</div>`;
     }
     if (!ok && soal.type === 'pgk') {
       const betul = soal.jawaban_multi.map(i => soal.opsi[i]);
@@ -570,7 +571,7 @@
     const soal = ses.kuis.soal[ses.qIdx];
     fb.className = 'feedback-kuis tampil no';
     let isi = `<h3>⏰ Waktu habis!</h3><p>Tenang, yang penting tetap semangat. ${esc(soal.penjelasan)}</p>`;
-    if (soal.type === 'pg') isi += `<div class="jawab-benar-teks">Jawaban: ${'ABCD'[soal.jawaban]}. ${esc(soal.opsi[soal.jawaban])}</div>`;
+    if (soal.type === 'pg') isi += `<div class="jawab-benar-teks">Jawaban: ${abjad(soal.jawaban)}. ${esc(soal.opsi[soal.jawaban])}</div>`;
     if (soal.type === 'pgk') isi += `<div class="jawab-benar-teks">Jawaban: ${soal.jawaban_multi.map(i => soal.opsi[i]).join(', ')}</div>`;
     const terakhirSoal = ses.qIdx === ses.kuis.soal.length - 1;
     isi += `<button class="tombol-lanjut" id="btnLanjutKuis">${terakhirSoal ? 'Lihat Hasil 🏁' : 'Soal Berikutnya ➡'}</button>`;
