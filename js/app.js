@@ -289,14 +289,25 @@
       }
       if (sl.tip) isi += `<div class="kotak-tip"><span class="ic">💡</span><div class="isi">${esc(sl.tip)}</div></div>`;
     } else if (sl.tipe === 'mini') {
+      /* contoh soal diambil secara acak dari BANK materi ini */
+      const poolMini = ses.materi.pertanyaan.filter(q => q.type === 'pg' && q.opsi && q.opsi.length >= 2);
+      let mq = null;
+      if (poolMini.length) {
+        const ambil = poolMini[Math.floor(Math.random() * poolMini.length)];
+        mq = { pertanyaan: ambil.teks, opsi: ambil.opsi, jwb: ambil.jawaban, penjelasan: ambil.penjelasan, gambar: ambil.gambar || '', stimulus: ambil.stimulus || '' };
+      } else {
+        mq = sl;
+      }
       isi = `<div class="mini-blok">
         <div class="panggung-judul">${sl.emoji} ${sl.judul}</div>`;
-      if (sl.gambar) isi += `<div style="text-align:center">${gambarUntuk(sl.gambar, sl.gambarA)}</div>`;
-      isi += `<div class="q">${esc(sl.pertanyaan)}</div>
-        <div class="opsi-grid">${sl.opsi.map((o, i) => `
+      if (mq.stimulus) isi += `<div class="stimulus-box">${esc(mq.stimulus)}</div>`;
+      if (mq.gambar) isi += `<div style="text-align:center">${gambarUntuk(mq.gambar, sl.gambarA)}</div>`;
+      isi += `<div class="q">${esc(mq.pertanyaan)}</div>
+        <div class="opsi-grid">${mq.opsi.map((o, i) => `
           <button class="opsi-pilih" data-i="${i}"><span class="abjad">${'ABCD'[i]}</span>${esc(o)}</button>`).join('')}</div>
         <div class="feedback-mini" hidden></div>
       </div>`;
+      ses.miniJwb = mq;
     }
     s.innerHTML = `
       <div class="panggung" id="panggungSlide">${isi}</div>
@@ -311,19 +322,20 @@
 
     if (sl.tipe === 'mini') {
       let dipilih = -1;
+      const mq = ses.miniJwb || sl;
       $$('.opsi-pilih', s).forEach(b => b.addEventListener('click', () => {
         bunyi('klik');
         dipilih = parseInt(b.dataset.i, 10);
         $$('.opsi-pilih', s).forEach(x => { x.classList.remove('dipilih'); });
         b.classList.add('dipilih');
         const fb = $('.feedback-mini', s);
-        const ok = dipilih === sl.jwb;
+        const ok = dipilih === mq.jwb;
         fb.hidden = false;
         fb.className = 'feedback-mini ' + (ok ? 'ok' : 'no');
-        fb.textContent = (ok ? '👍 Betul! ' : '👀 Belum pas. ') + sl.penjelasan;
+        fb.textContent = (ok ? '👍 Betul! ' : '👀 Belum pas. ') + mq.penjelasan;
         if (ok) bunyi('benar'); else bunyi('salah');
         b.classList.add(ok ? 'benar' : 'salah');
-        if (!ok) { $$('.opsi-pilih', s)[sl.jwb].classList.add('benar'); }
+        if (!ok) { $$('.opsi-pilih', s)[mq.jwb].classList.add('benar'); }
       }));
     }
     $('#navPrev').addEventListener('click', () => { bunyi('klik'); ses.slideIdx--; muatBelajar(); });
@@ -339,17 +351,19 @@
     bukaKuis({
       mode: 'materi',
       materi: ses.materi,
-      soal: ses.materi.pertanyaan.slice(),
+      soal: acak(ses.materi.pertanyaan.slice()).slice(0, 5),
       perSoalWaktu: 60
     });
   }
 
   function mulaiAcak() {
-    const pool = kumpulkanSoalTryOut();
+    const mtk = kumpulkanSoalTryOut().filter(q => q.mapel === 'matematika');
+    const bin = kumpulkanSoalTryOut().filter(q => q.mapel === 'bahasa');
+    const pilih = (arr, n) => acak(arr).slice(0, n);
     bukaKuis({
       mode: 'acak',
       judul: '🎲 Soal Acak',
-      soal: acak(pool).slice(0, 5),
+      soal: pilih(mtk, 3).concat(pilih(bin, 2)),
       perSoalWaktu: 60
     });
   }
@@ -379,7 +393,17 @@
     const nomor = idx + 1;
     const total = k.soal.length;
     ses.jawab = null;
-    const soalAdaStimulus = /Bacalah teks berikut!/.test(soal.teks) && soal.teks.includes('\n');
+
+    /* Teks acuan (stimulus) untuk soal bercerita:
+       - simpan di field 'stimulus' agar tampil di SETIAP soal
+       - dukungan format lama "Bacalah teks berikut!\n\n..." */
+    let stimulusText = soal.stimulus || null;
+    let tanyaTeks = soal.teks;
+    if (!stimulusText && /Bacalah teks berikut!/.test(soal.teks) && soal.teks.includes('\n')) {
+      const pecah = soal.teks.split('\n\n');
+      stimulusText = pecah[0];
+      tanyaTeks = pecah.slice(1).join('\n\n');
+    }
 
     let html = `
       <div class="kuis-info">
@@ -394,12 +418,11 @@
       html += `<div class="kategori-bentuk" style="margin:0 0 8px auto;display:inline-block">${esc(soal.materiJudul)}</div>`;
     }
 
-    if (soalAdaStimulus) {
-      const [stim, tanya] = soal.teks.split('\n\n');
-      html += `<div class="stimulus-box">${esc(stim)}</div>`;
-      html += `<div class="kuis-pertanyaan">${esc(tanya)}</div>`;
+    if (stimulusText) {
+      html += `<div class="stimulus-box">${esc(stimulusText)}</div>`;
+      html += `<div class="kuis-pertanyaan">${esc(tanyaTeks)}</div>`;
     } else {
-      html += `<div class="kuis-pertanyaan">${esc(soal.teks)}</div>`;
+      html += `<div class="kuis-pertanyaan">${esc(tanyaTeks)}</div>`;
     }
     if (soal.gambar) {
       const extra = { jam: soal.gambarA && soal.gambarA.jam, menit: soal.gambarA && soal.gambarA.menit };
@@ -577,7 +600,9 @@
       $('#overlay').hidden = true;
       $('#overlay').classList.remove('tampil');
       let pool = kumpulkanSoalTryOut();
-      pool = acak(pool).slice(0, 10);
+      const mtk = acak(pool.filter(q => q.mapel === 'matematika')).slice(0, 5);
+      const bin = acak(pool.filter(q => q.mapel === 'bahasa')).slice(0, 5);
+      pool = acak(mtk.concat(bin));
       bukaKuis({ mode: 'tryout', judul: '🏆 Try Out Ujian', soal: pool, perSoalWaktu: null });
       mulaiTimerTryOut();
     });
