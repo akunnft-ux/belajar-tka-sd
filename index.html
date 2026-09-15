@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>TKA Quest — Persiapan Ujian TKA SD/MI</title>
+  <meta name="description" content="Webapp interaktif persiapan Tes Kemampuan Akademik (TKA) jenjang SD/MI: Matematika & Bahasa Indonesia dengan materi, kuis, dan try out.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- Dekorasi latar melayang -->
+  <div class="latar" id="latar" aria-hidden="true"></div>
+
+  <!-- Kanvas konfeti -->
+  <canvas id="kanvas-konfeti" aria-hidden="true"></canvas>
+
+  <!-- HUD -->
+  <header class="hud" id="hud" hidden>
+    <button class="tombol-kembali" id="btnKembali" aria-label="Kembali">←</button>
+    <div class="hud-judul" id="hudJudul">TKA Quest</div>
+    <div class="avatar" id="hudAvatar">👧</div>
+    <div class="xp-blok">
+      <div class="xp-label"><span id="xlvl">Lv.1</span><span id="xxp">0 XP</span></div>
+      <div class="xp-trek"><div class="xp-isi" id="xpBar"></div></div>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- Splash -->
+    <section class="layar" id="screen-splash"></section>
+
+    <!-- Peta materi -->
+    <section class="layar" id="screen-peta"></section>
+
+    <!-- Belajar -->
+    <section class="layar" id="screen-belajar"></section>
+
+    <!-- Kuis -->
+    <section class="layar" id="screen-kuis"></section>
+
+    <!-- Hasil -->
+    <section class="layar" id="screen-hasil"></section>
+  </main>
+
+  <!-- Modal -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <!-- Toast level up -->
+  <template id="tplLevel">
+    <div class="toast-level" id="toastLevel">
+      <span class="ic">🎉</span>
+      <div><b>Level Naik!</b><small>Kamu makin jago!</small></div>
+    </div>
+  </template>
+
+  <!-- Defs SVG untuk ring skor -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="gradSkor" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#7c3aed"/>
+        <stop offset="55%" stop-color="#ef476f"/>
+        <stop offset="100%" stop-color="#ffb703"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
